@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Aritara - Create Your Story</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#" th:href="@{/home}">ARITARA</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/home}">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/user/profile}">Profile</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/savedStories}">Saved Stories</a>
+            </li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/user/logout}">Logout</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+
+<div class="container mt-5">
+    <h1 class="text-center">AI Story Generator</h1>
+    <form id="storyForm" th:object="${storyRequestDTO}" th:action="@{/story/generate}" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="plot">Plot</label>
+            <textarea class="form-control" id="plot" rows="5" th:field="*{plot}" placeholder="Ex. A librarian discovers a magical book that can bring stories to life."></textarea>
+        </div>
+        <div class="form-group">
+            <label for="file">Attach File (Optional)</label>
+            <input type="file" class="form-control-file" id="file" name="file">
+            <small id="fileHelp" class="form-text text-muted">Maximum file size: 1MB.</small>
+        </div>
+        <div class="form-group">
+            <label for="title">Title (Optional)</label>
+            <input type="text" class="form-control" id="title" th:field="*{title}" placeholder="Ex. Towards the Summit">
+        </div>
+        <div class="form-group">
+            <label for="storyLength">Story Length</label>
+            <select class="form-control" id="storyLength" th:field="*{storyLength}">
+                <option value="short">Short</option>
+                <option value="medium">Medium</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="narrativePerspective">Narrative Perspective (Optional)</label>
+            <select class="form-control" id="narrativePerspective" th:field="*{narrativePerspective}">
+                <option value="">-select-</option>
+                <option value="firstPerson">First Person</option>
+                <option value="thirdPerson">Third Person</option>
+                <option value="omniscient">Omniscient</option>
+                <option value="streamOfConsciousness">Stream of Consciousness</option>
+                <option value="epistolary">Epistolary</option>
+                <option value="multiplePerspectives">Multiple Perspectives</option>
+                <option value="interactive">Interactive</option>
+                <option value="observer">Observer</option>
+                <option value="cameraEye">Camera Eye</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="genre">Genre (Optional)</label>
+            <select class="form-control" id="genre" th:field="*{genre}">
+                <option value="">-select-</option>
+                <option value="fantasy">Fantasy</option>
+                <option value="sciFi">Science Fiction</option>
+                <option value="mystery">Mystery</option>
+                <option value="romance">Romance</option>
+                <option value="nonFiction">Non-Fiction</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="writingStyle">Writing Style (Optional)</label>
+            <select class="form-control" id="writingStyle" th:field="*{writingStyle}">
+                <option value="">-select-</option>
+                <option value="narrative">Narrative</option>
+                <option value="descriptive">Descriptive</option>
+                <option value="drama">Drama</option>
+                <option value="creative">Creative</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="characterName">Character Name (Optional)</label>
+            <input type="text" class="form-control" id="characterName" th:field="*{characterName}" placeholder="Ex. Dr. Chouaib">
+        </div>
+        <div class="form-group">
+            <label for="characterDescription">Character Description (Optional)</label>
+            <textarea class="form-control" id="characterDescription" rows="3" th:field="*{characterDescription}" placeholder="Ex. Dr. Chouaib is short and smart"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="settingDescription">Setting Description (Optional)</label>
+            <textarea class="form-control" id="settingDescription" rows="3" th:field="*{settingDescription}" placeholder="Ex. An old, small library with many windows"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="audience">Audience (Optional)</label>
+            <input type="text" class="form-control" id="audience" th:field="*{audience}" placeholder="Ex. Computer science students">
+        </div>
+        <button type="submit" class="btn btn-primary">Generate</button>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+<script>
+        document.getElementById('storyForm').addEventListener('submit', function(event) {
+        const fileInput = document.getElementById('file');
+        const file = fileInput.files[0];
+        if (file && file.size > 1024 * 1024) { // 1MB limit
+        alert('File size exceeds the maximum limit of 1MB.');
+        event.preventDefault();
+    }
+    });
+</script>
+</body>
+</html>

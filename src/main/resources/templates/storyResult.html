@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Generated Story</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <style>
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        .feedback-text {
+            height: 100px;
+            overflow-y: scroll;
+        }
+        .control-icons {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .control-icons img {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .sound-icon {
+            width: 40px;
+            height: 40px;
+        }
+        .save-icon {
+            width: 40px;
+            height: 40px;
+        }
+        .btn-regenerate {
+            background-color: #28a745;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .btn-regenerate:hover {
+            background-color: #218838;
+            transform: scale(1.05);
+        }
+        .highlight {
+            background-color: yellow;
+        }
+        .voice-select {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#" th:href="@{/home}">ARITARA</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/home}">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/user/profile}">Profile</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/savedStories}">Saved Stories</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h1 class="text-center">Generated Story</h1>
+    <div th:if="${message}" class="alert alert-success" role="alert" th:text="${message}"></div>
+    <div class="form-group">
+        <div class="alert alert-primary" id="generatedText" role="alert"></div>
+    </div>
+    <div class="control-icons">
+        <select id="voiceSelect" class="form-control voice-select"></select>
+        <img src="/sound_icon.png" alt="Sound" title="Sound" class="sound-icon" th:data-story="${story}">
+        <form th:action="@{/story/save}" method="post">
+            <input type="hidden" name="content" th:value="${story}">
+            <button type="submit" class="save-icon btn btn-link"><img src="/save_icon.png" alt="Save" title="Save"></button>
+        </form>
+    </div>
+    <div class="form-group">
+        <label for="feedback">Feedback</label>
+        <textarea id="feedback" rows="3" class="form-control feedback-text"></textarea>
+    </div>
+    <div class="text-center">
+        <form th:action="@{/story/regenerate}" method="post">
+            <input type="hidden" name="originalStory" th:value="${story}">
+            <input type="hidden" name="feedback" id="feedbackInput">
+            <button type="submit" class="btn btn-regenerate" onclick="submitFeedback()">Regenerate</button>
+        </form>
+        <div class="share-options" id="shareOptions">
+            <a th:href="'https://www.facebook.com/sharer/sharer.php?u=' + ${story}" target="_blank">
+                <img src="/facebook.png" alt="Share on Facebook">
+            </a>
+            <a th:href="'https://twitter.com/intent/tweet?text=Check out this story! ' + ${story}" target="_blank">
+                <img src="/twitter.png" alt="Share on Twitter">
+            </a>
+            <a th:href="'https://www.linkedin.com/shareArticle?mini=true&url=' + ${story}" target="_blank">
+                <img src="/linkedin.png" alt="Share on LinkedIn">
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+        integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+        crossorigin="anonymous"></script>
+<script th:inline="javascript">
+    $(document).ready(function() {
+        let isPlaying = false;
+        let utterance = null;
+        const story = /*[[${story}]]*/ 'Default story text';
+        const words = story.split(/\s+/);
+        let currentWordIndex = 0;
+
+        // Updated function to populate voice options (English only)
+        function populateVoiceList() {
+            const voices = speechSynthesis.getVoices();
+            const voiceSelect = document.getElementById('voiceSelect');
+            voiceSelect.innerHTML = '';
+            voices.forEach((voice, i) => {
+                // Check if the voice language starts with 'en' (English)
+                if (voice.lang.startsWith('en')) {
+                    const option = document.createElement('option');
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    option.setAttribute('data-lang', voice.lang);
+                    option.setAttribute('data-name', voice.name);
+                    voiceSelect.appendChild(option);
+                }
+            });
+        }
+
+        // Populate voice list on page load and when voices change
+        populateVoiceList();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = populateVoiceList;
+        }
+
+        // Function to highlight the current word
+        function highlightWord(index) {
+            const generatedText = document.getElementById('generatedText');
+            generatedText.innerHTML = words.map((word, i) =>
+                `<span class="${i === index ? 'highlight' : ''}">${word}</span>`
+            ).join(' ');
+        }
+
+        // Initialize the text with no highlighting
+        highlightWord(-1);
+
+        // Function to play or stop speech
+        function toggleSpeech() {
+            if (isPlaying) {
+                // Stop speech
+                window.speechSynthesis.cancel();
+                isPlaying = false;
+                highlightWord(-1);  // Remove all highlighting
+            } else {
+                // Play speech
+                utterance = new SpeechSynthesisUtterance(story);
+
+                // Set the selected voice
+                const selectedOption = document.getElementById('voiceSelect').selectedOptions[0];
+                const selectedVoice = speechSynthesis.getVoices().find(voice =>
+                    voice.name === selectedOption.getAttribute('data-name') &&
+                    voice.lang === selectedOption.getAttribute('data-lang')
+                );
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                }
+
+                currentWordIndex = 0;
+
+                utterance.onboundary = function(event) {
+                    if (event.name === 'word') {
+                        highlightWord(currentWordIndex);
+                        currentWordIndex++;
+                    }
+                };
+
+                utterance.onend = function() {
+                    isPlaying = false;
+                    highlightWord(-1);  // Remove all highlighting when done
+                };
+
+                speechSynthesis.speak(utterance);
+                isPlaying = true;
+            }
+        }
+
+        // Text-to-Speech functionality
+        $('.sound-icon').click(toggleSpeech);
+    });
+
+    // Regenerate story
+    function submitFeedback() {
+        document.getElementById('feedbackInput').value = document.getElementById('feedback').value;
+    }
+</script>
+</body>
+</html>
